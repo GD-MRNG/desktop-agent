@@ -4,18 +4,20 @@ from agents import Runner, trace, InputGuardrailTripwireTriggered
 from agents.items import ToolCallItem, ToolCallOutputItem
 from app_agents.desktop_agent import DesktopAgent
 from agent.trace import TraceLogger
+from rich.console import Console
+from tools.search import search_files, web_search
 
 
 class AgentManager:
     """Conductor — drives the Runner, owns conversation history, and logs the trace.
 
-    [CONCEPT] Brain/Hands/Conductor separation: this class is the Conductor (the *when*).
+    Brain/Hands/Conductor separation: this class is the Conductor (the *when*).
     It knows nothing about how agents reason (Brain) or how tools execute (Hands).
     Swapping an agent or tool requires no changes here.
     """
 
     def __init__(self) -> None:
-        # [CONCEPT] The Runner is stateless between calls. Conversation history must be
+        # The Runner is stateless between calls. Conversation history must be
         # passed explicitly each turn via result.to_input_list(). This manager owns that state.
         self._history: list = []
         self._logger = TraceLogger()
@@ -30,13 +32,13 @@ class AgentManager:
         input_payload = self._history + [{"role": "user", "content": user_input}]
 
         try:
-            # [CONCEPT] trace() — SDK context manager grouping all events for this turn.
+            # trace() — SDK context manager grouping all events for this turn.
             # Sends structured data to OpenAI's tracing platform for debugging.
             with trace(f"desktop-agent-turn-{self._turn}"):
                 # [CONCEPT] max_turns=15 — circuit breaker passed to the Runner, not the Agent.
                 result = await Runner.run(DesktopAgent, input_payload, max_turns=15)
         except InputGuardrailTripwireTriggered:
-            # [CONCEPT] @input_guardrail tripwire — the agent never ran; input was blocked.
+            # @input_guardrail tripwire — the agent never ran; input was blocked.
             msg = "[BLOCKED] Safety guardrail prevented this request."
             self._logger.on_response(msg)
             return msg
@@ -66,11 +68,10 @@ class AgentManager:
     async def gather_search(self, directory: str, query: str):
         """Run file search and web search concurrently and return both results.
 
-        [CONCEPT] asyncio.gather() — both coroutines are scheduled simultaneously.
+        asyncio.gather() — both coroutines are scheduled simultaneously.
         Total wait time is roughly the slowest of the two, not their sum.
         Use gather() when results are independent; use sequential await when B depends on A.
         """
-        from tools.search import search_files, web_search
         return await asyncio.gather(
             search_files(directory, query),
             web_search(query),
@@ -78,7 +79,6 @@ class AgentManager:
 
     async def start(self) -> None:
         """Run the interactive CLI loop."""
-        from rich.console import Console
         console = Console()
         console.print("[bold green]Desktop Agent ready. Type 'exit' to quit.[/bold green]\n")
 

@@ -54,7 +54,7 @@ class CommandResult(BaseModel):
 
 
 class SafetyCheck(BaseModel):
-    # [CONCEPT] Pydantic structured output for guardrail agent
+    # Pydantic structured output for guardrail agent
     # The guardrail agent returns this model so the tripwire logic
     # can read is_safe as a typed bool rather than parsing free text.
     is_safe: bool

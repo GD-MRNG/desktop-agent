@@ -26,7 +26,7 @@ async def safety_check(
     agent: Agent,
     input: str | list[TResponseInputItem],
 ) -> GuardrailFunctionOutput:
-    # [CONCEPT] @input_guardrail — SDK middleware running BEFORE the agent sees the message.
+    # @input_guardrail — SDK middleware running BEFORE the agent sees the message.
     # A cheap gpt-4o-mini model does the check; the main gpt-4o agent never runs if unsafe.
     # Contrast with agent/approvals.py, which is application-level safety AFTER the agent acts.
     result = await Runner.run(_guard_agent, input, context=ctx.context)

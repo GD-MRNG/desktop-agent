@@ -17,7 +17,7 @@ async def search_files(directory: str, query: str) -> SearchResults:
         directory: Directory to search in. Use '.' for current directory.
         query: Text or pattern to search for.
     """
-    # [CONCEPT] Tool chaining — the agent typically calls read_file after this
+    # Tool chaining — the agent typically calls read_file after this
     # to load the full context of a matching file. The match result gives it
     # enough to decide which file is worth reading.
     matches: list[SearchMatch] = []
@@ -54,7 +54,7 @@ async def web_search(query: str) -> WebSearchResults:
     Args:
         query: Search query string.
     """
-    # [CONCEPT] External API integration as a tool.
+    # External API integration as a tool.
     # asyncio.gather() in gather_search (agent/manager.py) can run this
     # concurrently with search_files when the agent needs both.
     results: list[WebResult] = []

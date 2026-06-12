@@ -5,7 +5,7 @@ from rich.rule import Rule
 class TraceLogger:
     """Prints a visible reasoning trace to the console for each agent turn.
 
-    [CONCEPT] Observability — makes the agent's internal state visible without
+    Observability — makes the agent's internal state visible without
     needing an external tracing service. Every tool call and result is printed
     so the user can follow what the agent is doing and why.
     """

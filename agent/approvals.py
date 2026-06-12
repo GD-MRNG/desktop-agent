@@ -14,7 +14,7 @@ def request_approval(action: str, working_dir: str) -> bool:
     Returns:
         True if the user approved, False if denied.
     """
-    # [CONCEPT] Application-level safety gate — runs AFTER the agent decides to act.
+    # Application-level safety gate — runs AFTER the agent decides to act.
     # Distinct from @input_guardrail which is SDK middleware running BEFORE the agent.
     # This gives the human final veto over any shell execution.
     _console.print(f"\n[bold yellow]⚠ APPROVAL REQUIRED[/bold yellow]")

@@ -16,7 +16,7 @@ async def run_command(command: str, working_dir: str = ".") -> CommandResult:
         command: Shell command to execute.
         working_dir: Directory to run the command in. Defaults to current directory.
     """
-    # [CONCEPT] Human-in-the-loop gate — explicit user confirmation before execution.
+    # Human-in-the-loop gate — explicit user confirmation before execution.
     # This is application-level safety, separate from the @input_guardrail middleware.
     # The agent decides to call this tool; the human decides whether it runs.
     approved = request_approval(command, working_dir)
@@ -28,7 +28,7 @@ async def run_command(command: str, working_dir: str = ".") -> CommandResult:
             command=command,
         )
 
-    # [CONCEPT] OS-aware shell routing — routes to the right shell per platform.
+    # OS-aware shell routing — routes to the right shell per platform.
     if platform.system() == "Windows":
         shell_args = ["powershell", "-Command", command]
     else:

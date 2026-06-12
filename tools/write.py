@@ -12,7 +12,7 @@ async def write_file(path: str, content: str) -> OperationResult:
         path: Path to the file to write (will be created or overwritten).
         content: Text content to write to the file.
     """
-    # [CONCEPT] Side-effecting tool — creates or overwrites a file.
+    # Side-effecting tool — creates or overwrites a file.
     # Pydantic return communicates clearly whether the operation succeeded.
     os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
     with open(path, "w", encoding="utf-8") as f:
@@ -28,7 +28,7 @@ async def append_file(path: str, content: str) -> OperationResult:
         path: Path to the file to append to.
         content: Text content to append.
     """
-    # [CONCEPT] Idempotency consideration — append is safer than overwrite
+    # Idempotency consideration — append is safer than overwrite
     # when the caller does not want to destroy existing content.
     os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
     with open(path, "a", encoding="utf-8") as f:
@@ -43,6 +43,6 @@ async def write_clipboard(content: str) -> OperationResult:
     Args:
         content: Text to place on the clipboard.
     """
-    # [CONCEPT] Lightweight side effect — changes OS state, returns typed result.
+    # Lightweight side effect — changes OS state, returns typed result.
     pyperclip.copy(content)
     return OperationResult(success=True, message="Content copied to clipboard.", path="")

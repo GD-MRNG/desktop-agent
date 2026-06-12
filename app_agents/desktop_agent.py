@@ -19,7 +19,7 @@ Guidelines:
 - Be concise and precise in your final responses
 """
 
-# [CONCEPT] Brain layer — the agent definition is the "who" and "what". It knows nothing
+# Brain layer — the agent definition is the "who" and "what". It knows nothing
 # about when it runs or how conversation history is managed; that is the Conductor's job.
 DesktopAgent = Agent(
     name="DesktopAgent",
@@ -36,14 +36,14 @@ DesktopAgent = Agent(
         web_search,
         run_command,
         SummaryAgent.as_tool(
-            # [CONCEPT] agent-as-tool: SummaryAgent runs as a nested sub-agent.
+            # agent-as-tool: SummaryAgent runs as a nested sub-agent.
             # DesktopAgent calls it like any other tool and receives the summary result back.
             # The parent retains control — unlike a handoff where the parent exits the flow.
             tool_name="summarise_text",
             tool_description="Summarise a block of text into 3–5 concise sentences. Pass the full text as input.",
-            max_turns=3,  # [CONCEPT] max_turns circuit breaker for this sub-agent's loop
+            max_turns=3,  # max_turns circuit breaker for this sub-agent's loop
         ),
     ],
-    input_guardrails=[safety_check],  # [CONCEPT] middleware — fires before agent reasoning starts
+    input_guardrails=[safety_check],  # middleware — fires before agent reasoning starts
 )
-# [CONCEPT] max_turns=15 for DesktopAgent is set in AgentManager.run() via Runner.run(max_turns=15)
+# max_turns=15 for DesktopAgent is set in AgentManager.run() via Runner.run(max_turns=15)
