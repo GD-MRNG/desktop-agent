@@ -32,6 +32,18 @@ A working desktop assistant built with the OpenAI Agents SDK
 
 ---
 
+## Prerequisites
+
+**uv** — this project uses [uv](https://docs.astral.sh/uv/getting-started/installation/) for dependency management and running scripts. Install it before anything else.
+
+**OpenAI API key** — the agent runs on `gpt-4o` and requires a valid key. Create a `.env` file at the project root:
+
+```
+OPENAI_API_KEY=sk-...
+```
+
+You can get a key from [platform.openai.com](https://platform.openai.com/api-keys). Without it the agent will fail to start.
+
 ## Usage
 
 ```bash
