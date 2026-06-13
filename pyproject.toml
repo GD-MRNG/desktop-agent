@@ -9,6 +9,7 @@ dependencies = [
     "playwright",
     "pyperclip",
     "rich",
+    "httpx",
     "python-dotenv",
     "flask",
 ]
@@ -28,3 +29,5 @@ dev = [
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+testpaths = ["tests"]
+pythonpath = ["."]

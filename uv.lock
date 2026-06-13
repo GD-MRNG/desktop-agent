@@ -296,6 +296,7 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "flask" },
+    { name = "httpx" },
     { name = "openai" },
     { name = "openai-agents" },
     { name = "playwright" },
@@ -314,6 +315,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "flask" },
+    { name = "httpx" },
     { name = "openai" },
     { name = "openai-agents" },
     { name = "playwright" },
