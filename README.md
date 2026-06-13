@@ -22,6 +22,11 @@ A working desktop assistant built with the OpenAI Agents SDK
 ### Summarisation
 - Condense text via a nested summary sub-agent
 
+### Documentation lookup (Context7)
+- Resolve any library or framework name to a canonical ID
+- Fetch live, up-to-date documentation and code examples via the Context7 MCP server
+- Set `CONTEXT7_API_KEY` in `.env` for a higher rate limit (free tier works without one)
+
 ### Safety
 - Input guardrail blocks dangerous patterns before the agent reasons
 - Human-in-the-loop approval gate for all shell commands

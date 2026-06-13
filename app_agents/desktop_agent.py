@@ -3,6 +3,7 @@ from tools.read import read_file, list_directory, read_clipboard
 from tools.write import write_file, append_file, write_clipboard
 from tools.search import search_files, web_search
 from tools.execute import run_command
+from tools.context7 import resolve_library_id, fetch_library_docs
 from app_agents.summary_agent import SummaryAgent
 from agent.guardrails import safety_check
 
@@ -16,6 +17,8 @@ Guidelines:
 - Use web_search for current information not available in local files
 - Always use run_command for shell tasks — it will prompt the user for approval first
 - Call summarise_text when asked to summarise or condense content
+- When asked about a third-party library, framework, or SDK: first call resolve_library_id,
+  then call fetch_library_docs with the returned ID and the user's specific question
 - Be concise and precise in your final responses
 """
 
@@ -35,6 +38,8 @@ DesktopAgent = Agent(
         search_files,
         web_search,
         run_command,
+        resolve_library_id,
+        fetch_library_docs,
         SummaryAgent.as_tool(
             # agent-as-tool: SummaryAgent runs as a nested sub-agent.
             # DesktopAgent calls it like any other tool and receives the summary result back.

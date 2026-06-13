@@ -65,3 +65,14 @@ class ScreenshotResult(BaseModel):
     image_base64: str
     width: int
     height: int
+
+
+class LibraryResolveResult(BaseModel):
+    library_id: str   # canonical Context7 ID, e.g. "/encode/httpx"
+    raw: str          # full text response from resolve-library-id
+
+
+class DocsResult(BaseModel):
+    library_id: str
+    query: str
+    content: str      # documentation text returned by query-docs
