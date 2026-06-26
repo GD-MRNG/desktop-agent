@@ -45,8 +45,8 @@ appear in LangChain under different names:
 | `handoff` | Conditional edge / Router in LangGraph |
 | `@input_guardrail` | `RunnableLambda` input validator |
 
-The model is also swappable — replacing `gpt-4o` with `claude-sonnet-4-5` or
-`gemini-2.0-flash` requires no structural changes.
+The model is also swappable — replacing `gpt-4o` with `claude-sonnet-4.6` or
+`gemini-3.1-flash` requires no structural changes.
 
 ## Capabilities
 
