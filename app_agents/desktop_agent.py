@@ -7,6 +7,9 @@ from tools.context7 import resolve_library_id, fetch_library_docs
 from app_agents.summary_agent import SummaryAgent
 from agent.guardrails import safety_check
 
+# [CONCEPT] Chain of Thought prompting: the system prompt requires the agent to state its
+# intent before calling any tool. This externalises reasoning, makes intermediate steps
+# visible in the trace, and reduces blind tool calls — a standard CoT prompting technique.
 _SYSTEM_PROMPT = """You are a desktop assistant with file system and shell access.
 
 Before calling any tool, briefly state what you are about to do and why.
@@ -22,6 +25,10 @@ Guidelines:
 - Be concise and precise in your final responses
 """
 
+# [CONCEPT] Docstring-as-tool-prompt: the @function_tool decorator sends each tool's
+# docstring to the model as its description. Docstrings in tools/ are production prompt
+# logic — they determine how and when the agent chooses to call each tool.
+#
 # Brain layer — the agent definition is the "who" and "what". It knows nothing
 # about when it runs or how conversation history is managed; that is the Conductor's job.
 DesktopAgent = Agent(

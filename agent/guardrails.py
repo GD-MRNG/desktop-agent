@@ -26,8 +26,13 @@ async def safety_check(
     agent: Agent,
     input: str | list[TResponseInputItem],
 ) -> GuardrailFunctionOutput:
+    # [CONCEPT] Model routing by cost/capability: a cheap gpt-4o-mini handles the fast safety
+    # check; the expensive gpt-4o reasoning agent never runs if the input is unsafe. The same
+    # pattern applies when routing between providers — e.g. Claude for deep reasoning, Gemini
+    # for fast classification — selecting the right model per task rather than using one model
+    # for everything.
+    #
     # @input_guardrail — SDK middleware running BEFORE the agent sees the message.
-    # A cheap gpt-4o-mini model does the check; the main gpt-4o agent never runs if unsafe.
     # Contrast with agent/approvals.py, which is application-level safety AFTER the agent acts.
     result = await Runner.run(_guard_agent, input, context=ctx.context)
     return GuardrailFunctionOutput(

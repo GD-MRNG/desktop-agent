@@ -12,6 +12,42 @@ agent reasoning by design so either side can be swapped independently. The agent
 enforces a safety guardrail before it reasons, and a human-in-the-loop gate before it
 acts.
 
+## What this demonstrates
+
+This repo is a reference implementation of core agentic engineering patterns using the
+OpenAI Agents SDK. The application is a working tool, but the primary purpose is to make
+these patterns visible and understandable:
+
+- **Tool-calling agent loop** — a reasoning agent that selects and calls tools across
+  multiple turns to complete multi-step tasks
+- **Dual safety layers** — SDK middleware guardrail (fires before reasoning) and a
+  human-in-the-loop approval gate (fires before action) as two intentionally separate
+  safety concerns
+- **Model routing by cost/capability** — cheap `gpt-4o-mini` for the fast safety check,
+  expensive `gpt-4o` only for reasoning; the same pattern as routing between Claude and
+  Gemini by task type
+- **Async concurrent tool execution** — `asyncio.gather()` to run independent tools in
+  parallel without blocking
+- **Agent-as-tool composition** — a sub-agent (`SummaryAgent`) registered as a callable
+  tool so the parent agent retains control, contrasted with a `handoff` where it does not
+- **LLM-as-judge evaluation** — 18 E2E test scenarios rated PASS / PARTIAL / FAIL by a
+  separate model, the standard approach for evaluating non-deterministic agent outputs
+
+### Why OpenAI Agents SDK, and how it maps to LangChain
+
+The SDK sits close to raw API calls, which keeps the patterns visible. The same concepts
+appear in LangChain under different names:
+
+| OpenAI Agents SDK | LangChain equivalent |
+|---|---|
+| `@function_tool` | `Tool` / `StructuredTool` |
+| `Agent` + `Runner` | `AgentExecutor` / LCEL agent chain |
+| `handoff` | Conditional edge / Router in LangGraph |
+| `@input_guardrail` | `RunnableLambda` input validator |
+
+The model is also swappable — replacing `gpt-4o` with `claude-sonnet-4-5` or
+`gemini-2.0-flash` requires no structural changes.
+
 ## Capabilities
 
 When working well, the agent can handle these tasks in a single conversation:
@@ -121,7 +157,21 @@ uv run python agent/evaluate.py
 
 The E2E test catalogue in [`docs/e2e.md`](docs/e2e.md) covers 18 scenarios across
 every capability group. The evaluation runner drives the agent through each test
-programmatically and asks an LLM judge to rate results PASS / PARTIAL / FAIL.
+programmatically and uses an **LLM-as-judge pattern** (`gpt-4o-mini` as evaluator) to
+rate results PASS / PARTIAL / FAIL. This is the standard approach for evaluating
+non-deterministic agent outputs at scale — a deterministic assert cannot tell you
+whether an agent's reasoning was correct.
 
 See [`docs/evaluation.md`](docs/evaluation.md) for the evaluation approach and a log
 of past runs.
+
+## Key files for a technical reviewer
+
+| File | What it demonstrates |
+|---|---|
+| `app_agents/desktop_agent.py` | Agent composition, CoT system prompt, docstring-as-tool-prompt, agent-as-tool |
+| `agent/guardrails.py` | `@input_guardrail` SDK middleware, model routing by cost/capability |
+| `agent/approvals.py` | Human-in-the-loop approval gate (application-level, post-reasoning) |
+| `agent/manager.py` | Conductor pattern — Runner orchestration, conversation history ownership |
+| `tools/search.py` | `asyncio.gather()` concurrent tool execution |
+| `agent/evaluate.py` | LLM-as-judge evaluation runner, `CapturingLogger` mock for tool call inspection |
