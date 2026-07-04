@@ -1,5 +1,6 @@
 import asyncio
 import json
+import uuid
 from agents import Runner, trace, InputGuardrailTripwireTriggered
 from agents.items import ToolCallItem, ToolCallOutputItem
 from app_agents.desktop_agent import DesktopAgent
@@ -22,6 +23,9 @@ class AgentManager:
         self._history: list = []
         self._logger = TraceLogger()
         self._turn = 0
+        # group_id ties every turn's trace() call to this session, so OpenAI's
+        # tracing dashboard shows one conversation instead of N disconnected traces.
+        self._session_id = uuid.uuid4().hex
 
     async def run(self, user_input: str) -> str:
         """Run one agent turn and return the final response."""
@@ -34,7 +38,14 @@ class AgentManager:
         try:
             # trace() — SDK context manager grouping all events for this turn.
             # Sends structured data to OpenAI's tracing platform for debugging.
-            with trace(f"desktop-agent-turn-{self._turn}"):
+            # group_id correlates every turn in this CLI session under one conversation
+            # in the dashboard, rather than each turn appearing as an unrelated trace.
+            with trace(
+                f"desktop-agent-turn-{self._turn}",
+                group_id=self._session_id,
+                metadata={"turn": self._turn},
+            ) as current_trace:
+                self._logger.on_trace_started(current_trace.trace_id)
                 # [CONCEPT] max_turns=15 — circuit breaker passed to the Runner, not the Agent.
                 result = await Runner.run(DesktopAgent, input_payload, max_turns=15)
         except InputGuardrailTripwireTriggered:

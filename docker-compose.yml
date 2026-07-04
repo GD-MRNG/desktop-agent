@@ -1,0 +1,17 @@
+services:
+  desktop-agent:
+    build: .
+    image: desktop-agent
+    # Required for the human-in-the-loop approval prompt (rich.prompt.Confirm),
+    # which blocks on stdin before any shell command runs.
+    stdin_open: true
+    tty: true
+    env_file:
+      - .env
+    environment:
+      AGENT_WORKDIR: /workspace
+    volumes:
+      # AGENT_HOST_DIR controls which host directory the agent operates on —
+      # defaults to the directory docker-compose is run from.
+      - ${AGENT_HOST_DIR:-.}:/workspace
+    working_dir: /workspace

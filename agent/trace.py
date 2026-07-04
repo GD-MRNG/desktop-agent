@@ -16,6 +16,12 @@ class TraceLogger:
     def on_turn_start(self) -> None:
         self._console.print(Rule(style="dim"))
 
+    def on_trace_started(self, trace_id: str) -> None:
+        # Surfaces the dashboard link for this turn's trace so a developer can jump
+        # straight from the CLI to platform.openai.com/traces while debugging.
+        url = f"https://platform.openai.com/traces/trace?trace_id={trace_id}"
+        self._console.print(f"[dim][TRACE][/dim] {url}")
+
     def on_tool_call(self, name: str, args: dict) -> None:
         args_str = ", ".join(f"{k}={v!r}" for k, v in args.items())
         self._console.print(f"[bold cyan][TOOL CALL][/bold cyan] {name}({args_str})")

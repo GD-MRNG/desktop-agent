@@ -2,6 +2,7 @@ import os
 import pyperclip
 from agents import function_tool
 from schemas.models import OperationResult
+from tools.sandbox import resolve_within_root
 
 
 @function_tool
@@ -14,8 +15,9 @@ async def write_file(path: str, content: str) -> OperationResult:
     """
     # Side-effecting tool — creates or overwrites a file.
     # Pydantic return communicates clearly whether the operation succeeded.
-    os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
-    with open(path, "w", encoding="utf-8") as f:
+    resolved = resolve_within_root(path)
+    os.makedirs(resolved.parent, exist_ok=True)
+    with open(resolved, "w", encoding="utf-8") as f:
         f.write(content)
     return OperationResult(success=True, message=f"Wrote {len(content)} characters.", path=path)
 
@@ -30,8 +32,9 @@ async def append_file(path: str, content: str) -> OperationResult:
     """
     # Idempotency consideration — append is safer than overwrite
     # when the caller does not want to destroy existing content.
-    os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
-    with open(path, "a", encoding="utf-8") as f:
+    resolved = resolve_within_root(path)
+    os.makedirs(resolved.parent, exist_ok=True)
+    with open(resolved, "a", encoding="utf-8") as f:
         f.write(content)
     return OperationResult(success=True, message=f"Appended {len(content)} characters.", path=path)
 

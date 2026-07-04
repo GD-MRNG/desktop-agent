@@ -12,6 +12,14 @@ agent reasoning by design so either side can be swapped independently. The agent
 enforces a safety guardrail before it reasons, and a human-in-the-loop gate before it
 acts.
 
+Beyond the agent-loop mechanics, the project is built with the same operational
+concerns as any production system regardless of whether an LLM is involved: guardrails
+before dangerous actions, human approval before irreversible ones, structured tracing
+for every turn, and an evaluation suite instead of a "looks right" smoke test. Hardening
+(path containment, command timeouts/output limits) and containerization are tracked in
+[issue #3](https://github.com/GD-MRNG/desktop-agent/issues/3) — in progress, not yet
+shipped.
+
 ## What this demonstrates
 
 This repo is a reference implementation of core agentic engineering patterns using the
@@ -99,6 +107,17 @@ alongside a coding session.
 - The shell approval gate gives the user final veto over every command the agent wants
   to run
 
+### Observability
+
+Every agent turn runs inside the OpenAI Agents SDK's `trace()` context manager
+(`agent/manager.py`), which sends structured trace data — tool calls, model responses,
+guardrail decisions — to [platform.openai.com/traces](https://platform.openai.com/traces)
+by default whenever `OPENAI_API_KEY` is set, in addition to the local `rich`-based CLI
+trace output (`agent/trace.py`). No separate tracing pipeline was bolted on for this —
+it's the SDK's default behavior, used deliberately rather than disabled. Per-session
+trace correlation (grouping a session's turns together in the dashboard) is tracked in
+[issue #3](https://github.com/GD-MRNG/desktop-agent/issues/3).
+
 ## Setup
 
 ### Prerequisites
@@ -136,6 +155,12 @@ uv run python -m agent.main
 ```
 
 Type `exit` or `quit` to stop. The agent maintains conversation history within a session.
+
+Native execution (`uv run`) is the primary way to run this agent, since its core value
+is operating directly on whatever host directory you're in. A containerized packaging
+(Dockerfile + compose, with a configurable bind mount so the container can reach a host
+directory) is tracked in [issue #3](https://github.com/GD-MRNG/desktop-agent/issues/3)
+— not yet shipped.
 
 ### Tests
 

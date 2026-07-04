@@ -13,6 +13,14 @@ from tools.read import read_file, list_directory, read_clipboard
 from tools.write import write_file, append_file, write_clipboard
 from tools.search import search_files
 from tools.execute import run_command
+from tools.sandbox import PathEscapeError
+
+
+@pytest.fixture(autouse=True)
+def _sandbox_root(tmp_path, monkeypatch):
+    # Tools are sandboxed to AGENT_WORKDIR by default (falls back to cwd otherwise).
+    # Point it at tmp_path so existing tests keep operating on their own scratch dir.
+    monkeypatch.setenv("AGENT_WORKDIR", str(tmp_path))
 
 
 def _unwrap(tool):
@@ -127,3 +135,39 @@ async def test_run_command_approved_executes():
         result = await _unwrap(run_command)("echo hello")
     assert result.exit_code == 0
     assert "hello" in result.stdout
+
+
+async def test_run_command_rejects_working_dir_outside_sandbox(tmp_path):
+    outside = tmp_path.parent / "definitely-not-the-sandbox-root"
+    with patch("tools.execute.request_approval", return_value=True):
+        with pytest.raises(PathEscapeError):
+            await _unwrap(run_command)("echo hello", str(outside))
+
+
+async def test_run_command_times_out(monkeypatch):
+    monkeypatch.setenv("AGENT_COMMAND_TIMEOUT_SECONDS", "0.05")
+    with patch("tools.execute.request_approval", return_value=True):
+        command = "Start-Sleep -Seconds 5" if os.name == "nt" else "sleep 5"
+        result = await _unwrap(run_command)(command)
+    assert result.exit_code == 124
+    assert "timed out" in result.stderr.lower()
+
+
+# ── sandbox containment ──────────────────────────────────────────────────────
+
+async def test_read_file_rejects_path_outside_sandbox(tmp_path):
+    outside = tmp_path.parent / "escape.txt"
+    outside.write_text("should not be readable")
+    with pytest.raises(PathEscapeError):
+        await _unwrap(read_file)(str(outside))
+
+
+async def test_write_file_rejects_path_outside_sandbox(tmp_path):
+    outside = tmp_path.parent / "escape.txt"
+    with pytest.raises(PathEscapeError):
+        await _unwrap(write_file)(str(outside), "content")
+
+
+async def test_read_file_rejects_traversal_escape(tmp_path):
+    with pytest.raises(PathEscapeError):
+        await _unwrap(read_file)("../escape.txt")
