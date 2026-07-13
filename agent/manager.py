@@ -1,11 +1,9 @@
-import asyncio
 import json
 from agents import Runner, trace, InputGuardrailTripwireTriggered
 from agents.items import ToolCallItem, ToolCallOutputItem
 from app_agents.desktop_agent import DesktopAgent
 from agent.trace import TraceLogger
 from rich.console import Console
-from tools.search import search_files, web_search
 
 
 class AgentManager:
@@ -48,13 +46,20 @@ class AgentManager:
         for item in result.new_items:
             if isinstance(item, ToolCallItem):
                 raw = item.raw_item
-                # raw_item is a ResponseFunctionToolCall for function tools
-                args_str = getattr(raw, "arguments", None) or "{}"
-                try:
-                    args = json.loads(args_str) if isinstance(args_str, str) else {}
-                except json.JSONDecodeError:
-                    args = {"raw": args_str}
-                self._logger.on_tool_call(item.tool_name or "?", args)
+                # raw_item is a ResponseFunctionToolCall for our tools/*.py function tools,
+                # but hosted tools (e.g. WebSearchTool) produce a different raw type
+                # (ResponseFunctionWebSearch) with no .name/.arguments — only .type/.action.
+                args_str = getattr(raw, "arguments", None)
+                if args_str:
+                    try:
+                        args = json.loads(args_str) if isinstance(args_str, str) else {}
+                    except json.JSONDecodeError:
+                        args = {"raw": args_str}
+                else:
+                    action = getattr(raw, "action", None)
+                    args = action.model_dump() if action is not None else {}
+                tool_name = item.tool_name or getattr(raw, "type", None) or "?"
+                self._logger.on_tool_call(tool_name, args)
             elif isinstance(item, ToolCallOutputItem):
                 self._logger.on_tool_result("result", str(item.output)[:200])
 
@@ -64,18 +69,6 @@ class AgentManager:
         response = str(result.final_output)
         self._logger.on_response(response)
         return response
-
-    async def gather_search(self, directory: str, query: str):
-        """Run file search and web search concurrently and return both results.
-
-        asyncio.gather() — both coroutines are scheduled simultaneously.
-        Total wait time is roughly the slowest of the two, not their sum.
-        Use gather() when results are independent; use sequential await when B depends on A.
-        """
-        return await asyncio.gather(
-            search_files(directory, query),
-            web_search(query),
-        )
 
     async def start(self) -> None:
         """Run the interactive CLI loop."""

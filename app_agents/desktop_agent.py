@@ -1,7 +1,7 @@
-from agents import Agent
+from agents import Agent, WebSearchTool
 from tools.read import read_file, list_directory, read_clipboard
 from tools.write import write_file, append_file, write_clipboard
-from tools.search import search_files, web_search
+from tools.search import search_files
 from tools.execute import run_command
 from tools.context7 import resolve_library_id, fetch_library_docs
 from app_agents.summary_agent import SummaryAgent
@@ -43,7 +43,11 @@ DesktopAgent = Agent(
         append_file,
         write_clipboard,
         search_files,
-        web_search,
+        # [CONCEPT] Hosted tool: WebSearchTool runs entirely on OpenAI's Responses API —
+        # unlike our tools/*.py functions, there is no local implementation to call or
+        # return value to unwrap. The model issues the search and gets results back
+        # server-side, which is why this is instantiated here rather than defined in tools/.
+        WebSearchTool(),
         run_command,
         resolve_library_id,
         fetch_library_docs,

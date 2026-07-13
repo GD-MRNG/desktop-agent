@@ -35,17 +35,6 @@ class SearchResults(BaseModel):
     query: str
 
 
-class WebResult(BaseModel):
-    title: str
-    url: str
-    snippet: str
-
-
-class WebSearchResults(BaseModel):
-    results: list[WebResult]
-    query: str
-
-
 class CommandResult(BaseModel):
     stdout: str
     stderr: str

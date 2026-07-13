@@ -140,7 +140,7 @@ TEST_CASES: list[dict[str, Any]] = [
         "id": 9,
         "name": "Web search for current information",
         "prompts": ["What's the OpenAI Agents SDK? Can you look that up for me?"],
-        "expect_tool": "web_search",
+        "expect_tool": "web_search_call",  # hosted WebSearchTool reports raw_item.type, not a function name
         "expect_blocked": False,
         "auto_approve": False,
     },

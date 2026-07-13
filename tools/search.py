@@ -1,9 +1,7 @@
-import asyncio
 import os
 import re
-import httpx
 from agents import function_tool
-from schemas.models import SearchMatch, SearchResults, WebResult, WebSearchResults
+from schemas.models import SearchMatch, SearchResults
 
 
 @function_tool
@@ -43,53 +41,6 @@ async def search_files(directory: str, query: str) -> SearchResults:
                 continue
 
     return SearchResults(matches=matches, total=len(matches), query=query)
-
-
-@function_tool
-async def web_search(query: str) -> WebSearchResults:
-    """Search the web for current information about a topic.
-
-    Uses DuckDuckGo Instant Answer API. Returns titles, URLs, and snippets.
-
-    Args:
-        query: Search query string.
-    """
-    # External API integration as a tool.
-    # asyncio.gather() in gather_search (agent/manager.py) can run this
-    # concurrently with search_files when the agent needs both.
-    results: list[WebResult] = []
-    try:
-        async with httpx.AsyncClient(timeout=10.0) as client:
-            response = await client.get(
-                "https://api.duckduckgo.com/",
-                params={"q": query, "format": "json", "no_html": "1", "skip_disambig": "1"},
-            )
-            data = response.json()
-
-        # Abstract answer
-        if data.get("AbstractText"):
-            results.append(WebResult(
-                title=data.get("Heading", "Summary"),
-                url=data.get("AbstractURL", ""),
-                snippet=data["AbstractText"],
-            ))
-
-        # Related topics
-        for topic in data.get("RelatedTopics", [])[:5]:
-            if isinstance(topic, dict) and topic.get("Text"):
-                results.append(WebResult(
-                    title=topic.get("Text", "")[:60],
-                    url=topic.get("FirstURL", ""),
-                    snippet=topic.get("Text", ""),
-                ))
-    except Exception as exc:
-        results.append(WebResult(
-            title="Search unavailable",
-            url="",
-            snippet=f"Could not retrieve results: {exc}",
-        ))
-
-    return WebSearchResults(results=results, query=query)
 
 
 def _is_text_file(filename: str) -> bool:
