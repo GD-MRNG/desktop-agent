@@ -62,7 +62,8 @@ When working well, the agent can handle these tasks in a single conversation:
 
 ### Web
 
-- Search the web via DuckDuckGo for current information not in training data
+- Search the web via the SDK's hosted `WebSearchTool` (OpenAI Responses API) for
+  current information not in training data
 
 ### Code execution
 
@@ -98,6 +99,18 @@ alongside a coding session.
   disk formatting) before the agent reasons
 - The shell approval gate gives the user final veto over every command the agent wants
   to run
+
+## Example run
+
+A sample conversation: "research blue whales and mountain lions, write up a
+markdown report, then give me a short briefing." The agent ran two web searches
+concurrently, wrote the findings to a file, and summarised them in its response —
+see the generated [blue whale / mountain lion report](docs/blue_whale_mountain_lion_report.md).
+
+Trace of that run in the OpenAI dashboard, showing the guardrail check followed by
+the two `web_search` tool calls:
+
+![Trace of a desktop-agent run showing the safety_check guardrail followed by two web_search tool calls](docs/images/traces.png)
 
 ## Setup
 
